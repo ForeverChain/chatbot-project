@@ -1,11 +1,21 @@
 services:
   - type: web
-    name: chatbot-backend
+    name: chatbot-backend-production
     env: node
     buildCommand: npm install
     startCommand: npm start
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: DATABASE_URL
-        sync: false
+        value: mysql://root:bebLmabjEMOwgtuvtzzWSjWswtLjNrZL@yamanote.proxy.rlwy.net:18783/railway
       - key: PORT
         value: 10000
+      - key: JWT_SECRET
+        sync: false
+      - key: FACEBOOK_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: FACEBOOK_VERIFY_TOKEN
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
