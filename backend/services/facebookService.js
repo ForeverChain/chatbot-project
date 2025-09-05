@@ -140,7 +140,14 @@ class FacebookService {
 
   // Send message via Facebook Messages API
   async sendMessage(integration, senderPsid, messageText) {
+    console.log('=== SENDING FACEBOOK MESSAGE ===');
+    console.log('Integration:', integration);
+    console.log('Sender PSID:', senderPsid);
+    console.log('Message text:', messageText);
+    
     const credentials = this.getCredentials(integration);
+    
+    console.log('Credentials:', credentials);
     
     // Construct the message body
     const requestBody = {
@@ -152,6 +159,8 @@ class FacebookService {
       }
     };
 
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    
     try {
       const response = await fetch(`https://graph.facebook.com/v18.0/me/messages?access_token=${credentials.pageAccessToken}`, {
         method: 'POST',
@@ -160,6 +169,8 @@ class FacebookService {
         },
         body: JSON.stringify(requestBody)
       });
+      
+      console.log('Facebook API response status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();

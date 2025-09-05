@@ -462,45 +462,50 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
     // Iterate over each entry - there may be multiple if batched
     for (const entry of body.entry) {
       console.log('Processing entry:', entry);
-      // Get the webhook event
-      const webhookEvent = entry.messaging[0];
-      console.log('Processing Facebook webhook event:', webhookEvent);
-
-      // Get the sender PSID
-      const senderPsid = webhookEvent.sender.id;
       
-      // In a production environment, you would:
-      // 1. Identify which page sent the message (using entry.id)
-      // 2. Find the corresponding integration in your database
-      // 3. Process the message using that integration's configuration
-      
-      // For demonstration, we'll try to find the integration by page ID
-      // This requires that the page ID is stored in the integration config
-      let integration = null;
-      
-      if (entry.id) {
-        // Try to find integration by page ID
-        integration = await facebookService.findIntegrationByPageId(entry.id);
-        console.log('Found integration by page ID:', integration ? integration.id : 'none');
+      // Check if we have messaging events
+      if (!entry.messaging || entry.messaging.length === 0) {
+        console.log('No messaging events found in entry');
+        continue;
       }
       
-      if (webhookEvent.message) {
-        console.log(`Processing message from user ${senderPsid}:`, webhookEvent.message.text);
-        // Process the received message
-        if (integration) {
-          await facebookService.processMessage(integration, senderPsid, webhookEvent.message);
-        } else {
-          // Fallback to default processing
-          await facebookService.processMessage({}, senderPsid, webhookEvent.message);
+      // Process each messaging event (there might be multiple in one entry)
+      for (const webhookEvent of entry.messaging) {
+        console.log('Processing Facebook webhook event:', webhookEvent);
+
+        // Get the sender PSID
+        const senderPsid = webhookEvent.sender.id;
+        
+        // Find integration by page ID
+        let integration = null;
+        if (entry.id) {
+          integration = await facebookService.findIntegrationByPageId(entry.id);
+          console.log('Found integration by page ID:', integration ? integration.id : 'none');
         }
-      } else if (webhookEvent.postback) {
-        console.log(`Processing postback from user ${senderPsid}:`, webhookEvent.postback.payload);
-        // Process postback
-        if (integration) {
-          await facebookService.processPostback(integration, senderPsid, webhookEvent.postback);
+        
+        // Handle different types of events
+        if (webhookEvent.message) {
+          // This is a user message
+          console.log(`Processing message from user ${senderPsid}:`, webhookEvent.message.text);
+          if (integration) {
+            await facebookService.processMessage(integration, senderPsid, webhookEvent.message);
+          } else {
+            await facebookService.processMessage({}, senderPsid, webhookEvent.message);
+          }
+        } else if (webhookEvent.postback) {
+          // This is a postback (button click)
+          console.log(`Processing postback from user ${senderPsid}:`, webhookEvent.postback.payload);
+          if (integration) {
+            await facebookService.processPostback(integration, senderPsid, webhookEvent.postback);
+          } else {
+            await facebookService.processPostback({}, senderPsid, webhookEvent.postback);
+          }
+        } else if (webhookEvent.delivery) {
+          // This is a delivery confirmation - just log it
+          console.log(`Delivery confirmation for user ${senderPsid}:`, webhookEvent.delivery);
         } else {
-          // Fallback to default processing
-          await facebookService.processPostback({}, senderPsid, webhookEvent.postback);
+          // Unknown event type
+          console.log('Unknown event type in webhook event:', Object.keys(webhookEvent));
         }
       }
     }

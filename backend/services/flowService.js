@@ -87,18 +87,30 @@ class FlowService {
   // Generate response based on flow
   generateFlowResponse(messages, flow) {
     try {
+      console.log('=== GENERATING FLOW RESPONSE ===');
+      console.log('Messages:', messages);
+      console.log('Flow:', flow);
+      
       const flowData = typeof flow.steps === 'string' ? JSON.parse(flow.steps) : flow.steps;
+      console.log('Flow data:', flowData);
+      
       const steps = Array.isArray(flowData) ? flowData : this.convertFlowToSteps(flowData);
+      console.log('Steps:', steps);
+      
       const userMessages = messages.filter(msg => msg.sender === 'user');
+      console.log('User messages:', userMessages);
       
       // If no user messages, return the first message step
       if (userMessages.length === 0) {
         const firstMessageStep = steps.find(step => step.type === 'message');
-        return firstMessageStep ? firstMessageStep.content : "Сайн байна уу! Би танд яаж тусалж чадах вэ?";
+        const response = firstMessageStep ? firstMessageStep.content : "Сайн байна уу! Би танд яаж тусалж чадах вэ?";
+        console.log('No user messages, returning first message step:', response);
+        return response;
       }
       
       // Get the last user message
       const lastUserMessage = userMessages[userMessages.length - 1];
+      console.log('Last user message:', lastUserMessage);
       
       // For simplicity, we'll just find the next message step
       // In a real implementation, you would have more sophisticated logic
@@ -108,15 +120,22 @@ class FlowService {
         !messages.some(msg => msg.content === step.content)
       );
       
+      console.log('Next message step:', nextMessageStep);
+      
       if (nextMessageStep) {
+        console.log('Returning next message step content:', nextMessageStep.content);
         return nextMessageStep.content;
       }
       
       // If no next message step found, return a default response
-      return "Би таны асуултанд хариулахыг оролдож байна. Та өөрийн асуултаа дэлгэрэнгүй тайлбарлаж чадах уу?";
+      const defaultResponse = "Би таны асуултанд хариулахыг оролдож байна. Та өөрийн асуултаа дэлгэрэнгүй тайлбарлаж чадах уу?";
+      console.log('No next message step found, returning default:', defaultResponse);
+      return defaultResponse;
     } catch (error) {
       console.error('Error generating flow response:', error);
-      return "Уучлаарай, алдаа гарлаа. Хариулт өгөхөд асуудал гарлаа.";
+      const errorMessage = "Уучлаарай, алдаа гарлаа. Хариулт өгөхөд асуудал гарлаа.";
+      console.log('Returning error message:', errorMessage);
+      return errorMessage;
     }
   }
 
