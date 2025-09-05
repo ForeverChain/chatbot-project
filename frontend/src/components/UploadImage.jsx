@@ -6,6 +6,9 @@ const UploadImage = ({ onUploadSuccess, onUploadError }) => {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -26,7 +29,7 @@ const UploadImage = ({ onUploadSuccess, onUploadError }) => {
     setUploading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3003/api/uploads/image', formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/uploads/image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
