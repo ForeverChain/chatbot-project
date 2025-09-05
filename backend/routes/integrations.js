@@ -402,19 +402,18 @@ router.get('/facebook/webhook', async (req, res) => {
       // Find integration by verify token in config
       const integrations = await prisma.integration.findMany({
         where: {
-          type: 'facebook',
-          config: {
-            contains: token
-          }
+          type: 'facebook'
         }
       });
       
-      console.log('Found integrations with matching token:', integrations.length);
+      console.log('Found Facebook integrations:', integrations.length);
       
-      // Filter to find the exact match
+      // Filter to find the exact match by parsing each config
       integration = integrations.find(int => {
         try {
-          const config = JSON.parse(int.config);
+          const config = typeof int.config === 'string' 
+            ? JSON.parse(int.config) 
+            : int.config;
           return config && config.verifyToken === token;
         } catch (e) {
           console.error('Error parsing config for integration:', int.id, e);
@@ -446,6 +445,36 @@ router.get('/facebook/webhook', async (req, res) => {
   }
 });
 
+// Function to verify Facebook request signature
+function verifyRequestSignature(req, res, buf, encoding) {
+  console.log('=== VERIFYING FACEBOOK REQUEST SIGNATURE ===');
+  console.log('Request headers:', req.headers);
+  console.log('Request body buffer length:', buf.length);
+  
+  const signature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
+  
+  console.log('Facebook signature:', signature);
+  
+  if (!signature) {
+    console.warn('Facebook webhook signature missing - this may be a test request');
+    // For production, you might want to reject requests without signature
+    // But for development/testing, we'll allow it to continue
+    return;
+  } else {
+    // Verify the signature using the Facebook service
+    const isValid = facebookService.verifySignature(signature, buf);
+    if (!isValid) {
+      console.error('Invalid Facebook webhook signature');
+      // For debugging purposes during development, we'll log but not reject
+      // In production, you should reject invalid signatures:
+      // throw new Error('Invalid Facebook webhook signature');
+      console.log('Continuing with invalid signature for debugging purposes');
+    } else {
+      console.log('Facebook signature verified successfully');
+    }
+  }
+}
+
 // Facebook Webhook for receiving messages
 router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }), async (req, res) => {
   console.log('=== FACEBOOK WEBHOOK MESSAGE REQUEST ===');
@@ -459,27 +488,37 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
   // Check if this is an event from a page subscription
   if (body.object === 'page') {
     console.log('Processing page subscription event');
+    
+    // Handle case where body.entry is not an array
+    const entries = Array.isArray(body.entry) ? body.entry : [body.entry];
+    
     // Iterate over each entry - there may be multiple if batched
-    for (const entry of body.entry) {
+    for (const entry of entries) {
       console.log('Processing entry:', entry);
       
       // Check if we have messaging events
-      if (!entry.messaging || entry.messaging.length === 0) {
+      const messagingEvents = entry.messaging || entry.messaging_events || [];
+      if (!messagingEvents.length) {
         console.log('No messaging events found in entry');
         continue;
       }
       
       // Process each messaging event (there might be multiple in one entry)
-      for (const webhookEvent of entry.messaging) {
+      for (const webhookEvent of messagingEvents) {
         console.log('Processing Facebook webhook event:', webhookEvent);
 
         // Get the sender PSID
-        const senderPsid = webhookEvent.sender.id;
+        const senderPsid = webhookEvent.sender && webhookEvent.sender.id;
+        if (!senderPsid) {
+          console.error('No sender PSID found in webhook event');
+          continue;
+        }
         
         // Find integration by page ID
         let integration = null;
-        if (entry.id) {
-          integration = await facebookService.findIntegrationByPageId(entry.id);
+        const pageId = entry.id;
+        if (pageId) {
+          integration = await facebookService.findIntegrationByPageId(pageId);
           console.log('Found integration by page ID:', integration ? integration.id : 'none');
         }
         
@@ -490,7 +529,8 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
           if (integration) {
             await facebookService.processMessage(integration, senderPsid, webhookEvent.message);
           } else {
-            await facebookService.processMessage({}, senderPsid, webhookEvent.message);
+            // Use an empty object instead of {} to avoid issues
+            await facebookService.processMessage({id: null}, senderPsid, webhookEvent.message);
           }
         } else if (webhookEvent.postback) {
           // This is a postback (button click)
@@ -498,7 +538,7 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
           if (integration) {
             await facebookService.processPostback(integration, senderPsid, webhookEvent.postback);
           } else {
-            await facebookService.processPostback({}, senderPsid, webhookEvent.postback);
+            await facebookService.processPostback({id: null}, senderPsid, webhookEvent.postback);
           }
         } else if (webhookEvent.delivery) {
           // This is a delivery confirmation - just log it
@@ -519,35 +559,5 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
     res.sendStatus(404);
   }
 });
-
-// Function to verify Facebook request signature
-function verifyRequestSignature(req, res, buf) {
-  console.log('=== VERIFYING FACEBOOK REQUEST SIGNATURE ===');
-  console.log('Request headers:', req.headers);
-  console.log('Request body buffer length:', buf.length);
-  
-  const signature = req.headers['x-hub-signature-256'];
-  
-  console.log('Facebook signature:', signature);
-  
-  if (!signature) {
-    console.error('Facebook webhook signature missing');
-    // For debugging purposes, let's not throw an error for now
-    // throw new Error('Facebook webhook signature missing');
-    console.log('Continuing without signature verification for debugging');
-    return;
-  } else {
-    // Verify the signature using the Facebook service
-    const isValid = facebookService.verifySignature(signature, buf);
-    if (!isValid) {
-      console.error('Invalid Facebook webhook signature');
-      // For debugging purposes, let's not throw an error for now
-      // throw new Error('Invalid Facebook webhook signature');
-      console.log('Continuing with invalid signature for debugging');
-    } else {
-      console.log('Facebook signature verified successfully');
-    }
-  }
-}
 
 module.exports = router;

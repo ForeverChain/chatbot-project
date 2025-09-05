@@ -1,6 +1,7 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const chatbotService = require('./chatbotService');
 const prisma = require('../prisma/client');
+const crypto = require('crypto');
 
 class FacebookService {
   constructor() {
@@ -15,9 +16,13 @@ class FacebookService {
     console.log('Getting credentials for integration:', integration);
     
     let config = {};
-    if (integration.config) {
+    if (integration && integration.config) {
       try {
-        config = JSON.parse(integration.config);
+        if (typeof integration.config === 'string') {
+          config = JSON.parse(integration.config);
+        } else {
+          config = integration.config;
+        }
         console.log('Parsed config:', config);
       } catch (e) {
         console.error('Error parsing config:', e);
@@ -25,7 +30,7 @@ class FacebookService {
     }
     
     return {
-      pageAccessToken: integration.token || this.defaultPageAccessToken,
+      pageAccessToken: (integration && integration.token) || this.defaultPageAccessToken,
       verifyToken: config.verifyToken || this.defaultVerifyToken,
       appSecret: this.defaultAppSecret // App secret is typically app-wide
     };
@@ -151,6 +156,12 @@ class FacebookService {
     
     console.log('Credentials:', credentials);
     
+    // Check if we have a page access token
+    if (!credentials.pageAccessToken) {
+      console.error('No page access token available for sending message');
+      throw new Error('No page access token available');
+    }
+    
     // Construct the message body
     const requestBody = {
       recipient: {
@@ -196,33 +207,75 @@ class FacebookService {
 
   // Verify request signature (for security)
   verifySignature(signature, payload) {
-    // TODO: Implement proper signature verification
-    // This requires crypto library and Facebook App Secret
+    // Properly implement signature verification
     console.log('Verifying Facebook signature:', signature);
-    return true; // For now, just return true
+    
+    // If no app secret is configured, skip verification (for development)
+    if (!this.defaultAppSecret) {
+      console.log('No app secret configured, skipping signature verification');
+      return true;
+    }
+    
+    // If no signature provided, fail verification
+    if (!signature) {
+      console.error('No signature provided for verification');
+      return false;
+    }
+    
+    try {
+      // Extract the signature hash
+      const signatureHash = signature.split('sha256=')[1];
+      if (!signatureHash) {
+        console.error('Invalid signature format');
+        return false;
+      }
+      
+      // Create expected hash using app secret
+      const expectedHash = crypto
+        .createHmac('sha256', this.defaultAppSecret)
+        .update(payload, 'utf8')
+        .digest('hex');
+      
+      // Compare hashes securely
+      const expectedSignature = `sha256=${expectedHash}`;
+      const isValid = crypto.timingSafeEqual(
+        Buffer.from(signature, 'utf8'),
+        Buffer.from(expectedSignature, 'utf8')
+      );
+      
+      console.log('Signature verification result:', isValid);
+      return isValid;
+    } catch (error) {
+      console.error('Error during signature verification:', error);
+      return false;
+    }
   }
   
   // Find integration by Facebook page ID
   async findIntegrationByPageId(pageId) {
     try {
+      // First try to find integrations that contain the pageId in their config
       const integrations = await prisma.integration.findMany({
         where: {
-          type: 'facebook',
-          config: {
-            contains: pageId
-          }
+          type: 'facebook'
         }
       });
       
-      // Filter to find the exact match
-      return integrations.find(integration => {
+      // Filter to find the exact match by parsing each config
+      const matchingIntegration = integrations.find(integration => {
         try {
-          const config = JSON.parse(integration.config);
-          return config.pageId === pageId;
+          const config = typeof integration.config === 'string' 
+            ? JSON.parse(integration.config) 
+            : integration.config;
+          return config && config.pageId === pageId;
         } catch (e) {
+          console.error('Error parsing config for integration:', integration.id, e);
           return false;
         }
       });
+      
+      console.log(`Found integration for page ID ${pageId}:`, matchingIntegration ? matchingIntegration.id : 'none');
+      return matchingIntegration || null;
     } catch (error) {
       console.error('Error finding integration by page ID:', error);
       return null;
