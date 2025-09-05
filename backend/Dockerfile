@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies only with legacy peer deps to avoid conflicts
+RUN npm ci --only=production --legacy-peer-deps
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
