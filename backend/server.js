@@ -2,6 +2,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// Generate Prisma client at startup (in production)
+if (process.env.NODE_ENV === 'production') {
+  try {
+    console.log('Generating Prisma client...');
+    require('child_process').execSync('npx prisma generate', { stdio: 'inherit' });
+    console.log('Prisma client generated successfully');
+  } catch (error) {
+    console.error('Failed to generate Prisma client:', error.message);
+  }
+}
+
 const app = express();
 // Use Render's PORT or environment PORT or default to 3003
 const PORT = process.env.PORT || 3003;

@@ -10,6 +10,7 @@
     "db:migrate": "npx prisma migrate dev",
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
+    "db:setup": "node scripts/prisma-setup.js",
     "migrate:postgres": "node scripts/migrate-to-postgres.js",
     "postinstall": "npx prisma generate"
   },
