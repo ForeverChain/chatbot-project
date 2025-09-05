@@ -486,6 +486,8 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
         // Handle different types of events
         if (webhookEvent.message) {
           // This is a user message
+
+        await facebookService.processPostback({}, senderPsid, webhookEvent.postback);
           console.log(`Processing message from user ${senderPsid}:`, webhookEvent.message.text);
           if (integration) {
             await facebookService.processMessage(integration, senderPsid, webhookEvent.message);

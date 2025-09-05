@@ -70,6 +70,13 @@ class FacebookService {
       console.log('Sender PSID:', senderPsid);
       console.log('Received message:', receivedMessage);
       
+      // Handle case where integration is empty or not found
+      if (!integration || !integration.id) {
+        console.log('No integration found, using default response');
+        await this.sendMessage(integration, senderPsid, "Hello! Thanks for your message. I'm your chatbot assistant. How can I help you today?");
+        return;
+      }
+      
       // Get the chatbot associated with this integration
       if (!integration.chatbotId) {
         console.error(`No chatbot associated with integration ${integration.id}`);
@@ -109,7 +116,7 @@ class FacebookService {
       console.error('Error processing Facebook message:', error);
       try {
         // Try to send an error response
-        await this.sendMessage(integration, senderPsid, "Sorry, I encountered an error while processing your message.");
+        await this.sendMessage(integration, senderPsid, "Sorry, I encountered an error while processing your message. Please try again later.");
       } catch (sendError) {
         console.error('Error sending error response:', sendError);
       }
