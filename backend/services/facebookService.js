@@ -65,7 +65,19 @@ class FacebookService {
   // Process incoming Facebook message
   async processMessage(integration, senderPsid, receivedMessage) {
     try {
+      console.log('=== PROCESSING FACEBOOK MESSAGE ===');
+      console.log('Integration:', integration);
+      console.log('Sender PSID:', senderPsid);
+      console.log('Received message:', receivedMessage);
+      
       // Get the chatbot associated with this integration
+      if (!integration.chatbotId) {
+        console.error(`No chatbot associated with integration ${integration.id}`);
+        // Try to send a direct response
+        await this.sendMessage(integration, senderPsid, "Thank you for your message! I'm currently being set up.");
+        return;
+      }
+      
       const chatbot = await prisma.chatbot.findUnique({
         where: {
           id: integration.chatbotId
@@ -73,9 +85,13 @@ class FacebookService {
       });
       
       if (!chatbot) {
-        console.error(`Chatbot not found for integration ${integration.id}`);
+        console.error(`Chatbot not found for integration ${integration.id} with chatbotId ${integration.chatbotId}`);
+        // Try to send a direct response
+        await this.sendMessage(integration, senderPsid, "Thank you for your message! There seems to be an issue with my configuration.");
         return;
       }
+      
+      console.log(`Found chatbot ${chatbot.id} for integration ${integration.id}`);
       
       // Process the message through the chatbot engine
       const responseText = await chatbotService.processMessage(
@@ -85,10 +101,18 @@ class FacebookService {
         { platform: 'facebook', senderPsid }
       );
       
+      console.log(`Generated response: "${responseText}"`);
+      
       // Send the response message
       await this.sendMessage(integration, senderPsid, responseText);
     } catch (error) {
       console.error('Error processing Facebook message:', error);
+      try {
+        // Try to send an error response
+        await this.sendMessage(integration, senderPsid, "Sorry, I encountered an error while processing your message.");
+      } catch (sendError) {
+        console.error('Error sending error response:', sendError);
+      }
     }
   }
 
