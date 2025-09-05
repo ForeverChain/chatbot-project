@@ -31,8 +31,11 @@ services:
     ports:
       - "3003:3003"
     environment:
+      NODE_ENV: development
       DATABASE_URL: mysql://chatbotuser:chatbotpassword@mysql:3306/chatbot
       PORT: 3003
+      JWT_SECRET: your_development_jwt_secret
+      BCRYPT_SALT_ROUNDS: 10
       FACEBOOK_PAGE_ACCESS_TOKEN: your_default_page_access_token_here
       FACEBOOK_VERIFY_TOKEN: your_default_verify_token_here
       FACEBOOK_APP_SECRET: your_default_app_secret_here

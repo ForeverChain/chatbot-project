@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: chatbot-backend-prod
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 3003
+      JWT_SECRET: ${JWT_SECRET}
+      BCRYPT_SALT_ROUNDS: 12
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${FACEBOOK_PAGE_ACCESS_TOKEN}
+      FACEBOOK_VERIFY_TOKEN: ${FACEBOOK_VERIFY_TOKEN}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
+    volumes:
+      - /app/node_modules
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: chatbot-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    volumes:
+      - /app/node_modules
