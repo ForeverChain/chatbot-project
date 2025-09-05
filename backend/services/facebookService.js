@@ -72,16 +72,16 @@ class FacebookService {
       
       // Handle case where integration is empty or not found
       if (!integration || !integration.id) {
-        console.log('No integration found, using default response');
-        await this.sendMessage(integration, senderPsid, "Hello! Thanks for your message. I'm your chatbot assistant. How can I help you today?");
+        console.log('No integration found, sending simple hello response');
+        await this.sendMessage(integration, senderPsid, "Hello! Thanks for your message. I'm your chatbot assistant.");
         return;
       }
       
       // Get the chatbot associated with this integration
       if (!integration.chatbotId) {
         console.error(`No chatbot associated with integration ${integration.id}`);
-        // Try to send a direct response
-        await this.sendMessage(integration, senderPsid, "Thank you for your message! I'm currently being set up.");
+        // Send a simple response
+        await this.sendMessage(integration, senderPsid, "Hello! Thanks for messaging us. We'll get back to you soon.");
         return;
       }
       
@@ -93,20 +93,15 @@ class FacebookService {
       
       if (!chatbot) {
         console.error(`Chatbot not found for integration ${integration.id} with chatbotId ${integration.chatbotId}`);
-        // Try to send a direct response
-        await this.sendMessage(integration, senderPsid, "Thank you for your message! There seems to be an issue with my configuration.");
+        // Send a simple response
+        await this.sendMessage(integration, senderPsid, "Hello! Thanks for your message. I'm currently being set up.");
         return;
       }
       
       console.log(`Found chatbot ${chatbot.id} for integration ${integration.id}`);
       
-      // Process the message through the chatbot engine
-      const responseText = await chatbotService.processMessage(
-        chatbot.id, 
-        chatbot.userId, 
-        receivedMessage.text, 
-        { platform: 'facebook', senderPsid }
-      );
+      // For testing, just send a simple hello message
+      const responseText = "Hello! This is a test response from your chatbot.";
       
       console.log(`Generated response: "${responseText}"`);
       
@@ -116,7 +111,7 @@ class FacebookService {
       console.error('Error processing Facebook message:', error);
       try {
         // Try to send an error response
-        await this.sendMessage(integration, senderPsid, "Sorry, I encountered an error while processing your message. Please try again later.");
+        await this.sendMessage(integration, senderPsid, "Hello! Thanks for your message. Sorry, I encountered an error.");
       } catch (sendError) {
         console.error('Error sending error response:', sendError);
       }
