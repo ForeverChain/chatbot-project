@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       port: 3000
     },
     build: {
-      outDir: 'dist'
+      outDir: 'build'  // Changed from 'dist' to 'build' to match deployment expectations
     }
   }
 })

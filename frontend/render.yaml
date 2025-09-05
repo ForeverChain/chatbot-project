@@ -3,7 +3,7 @@ services:
     name: chatbot-frontend
     env: static
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    staticPublishPath: build
     envVars:
       - key: VITE_API_URL
         sync: false
