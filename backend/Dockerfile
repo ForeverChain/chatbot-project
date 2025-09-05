@@ -4,11 +4,14 @@ FROM node:18-alpine
 # Set the working directory
 WORKDIR /app
 
+# Install dependencies needed for Prisma
+RUN apk add --no-cache openssl
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install production dependencies only with legacy peer deps to avoid conflicts
-RUN npm ci --only=production --legacy-peer-deps
+# Install all dependencies (including dev dependencies needed for Prisma generation)
+RUN npm ci --legacy-peer-deps
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
@@ -17,7 +20,8 @@ RUN npx prisma generate
 # Copy the rest of the application code
 COPY . .
 
-# Make the migration script executable
+# Make the startup script executable
+RUN chmod +x scripts/start-server.sh
 RUN chmod +x scripts/docker-migrate.sh
 
 # Create a non-root user for security (production best practice)
@@ -31,5 +35,5 @@ USER nextjs
 # Expose the port the app runs on
 EXPOSE 3003
 
-# Run migrations and start the application
-CMD ["./scripts/docker-migrate.sh"]
+# Use the startup script that ensures Prisma is properly initialized
+CMD ["./scripts/start-server.sh"]

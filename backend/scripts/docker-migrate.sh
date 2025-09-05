@@ -26,6 +26,15 @@ wait_for_db() {
 # Wait for the database to be ready
 wait_for_db
 
+# Generate Prisma client to ensure it's up to date
+echo "Generating Prisma client..."
+if npx prisma generate; then
+  echo "Prisma client generated successfully."
+else
+  echo "Failed to generate Prisma client."
+  exit 1
+fi
+
 # Run Prisma migrations
 echo "Running Prisma migrations..."
 if npx prisma migrate deploy; then

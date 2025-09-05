@@ -19,13 +19,14 @@ COPY prisma ./prisma/
 # Generate Prisma Client for the Linux platform
 RUN npx prisma generate
 
-# Remove dev dependencies to reduce image size
-RUN npm prune --production
-
 # Copy the rest of the application code
 COPY . .
 
-# Make the migration script executable
+# Remove dev dependencies to reduce image size (after Prisma client generation)
+RUN npm prune --production
+
+# Make the startup script executable
+RUN chmod +x scripts/start-server.sh
 RUN chmod +x scripts/docker-migrate.sh
 
 # Create a non-root user for security
@@ -39,5 +40,5 @@ USER nextjs
 # Expose the port the app runs on
 EXPOSE 3003
 
-# Run migrations and start the application
-CMD ["./scripts/docker-migrate.sh"]
+# Use the startup script that ensures Prisma is properly initialized
+CMD ["./scripts/start-server.sh"]
