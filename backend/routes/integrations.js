@@ -424,6 +424,8 @@ router.get('/facebook/webhook', async (req, res) => {
 // Facebook Webhook for receiving messages
 router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }), async (req, res) => {
   const body = req.body;
+  
+  console.log('Facebook webhook message received:', JSON.stringify(body, null, 2));
 
   // Check if this is an event from a page subscription
   if (body.object === 'page') {
@@ -431,7 +433,7 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
     for (const entry of body.entry) {
       // Get the webhook event
       const webhookEvent = entry.messaging[0];
-      console.log('Facebook webhook event received:', webhookEvent);
+      console.log('Processing Facebook webhook event:', webhookEvent);
 
       // Get the sender PSID
       const senderPsid = webhookEvent.sender.id;
@@ -451,6 +453,7 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
       }
       
       if (webhookEvent.message) {
+        console.log(`Processing message from user ${senderPsid}:`, webhookEvent.message.text);
         // Process the received message
         if (integration) {
           await facebookService.processMessage(integration, senderPsid, webhookEvent.message);
@@ -459,6 +462,7 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
           await facebookService.processMessage({}, senderPsid, webhookEvent.message);
         }
       } else if (webhookEvent.postback) {
+        console.log(`Processing postback from user ${senderPsid}:`, webhookEvent.postback.payload);
         // Process postback
         if (integration) {
           await facebookService.processPostback(integration, senderPsid, webhookEvent.postback);
@@ -470,9 +474,11 @@ router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }
     }
 
     // Return a '200 OK' response to all requests
+    console.log('Successfully processed Facebook webhook event');
     res.status(200).send('EVENT_RECEIVED');
   } else {
     // Return a '404 Not Found' if event is not from a page subscription
+    console.log('Received non-page webhook event');
     res.sendStatus(404);
   }
 });
