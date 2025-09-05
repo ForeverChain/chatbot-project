@@ -6,13 +6,16 @@ const useChatbots = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   const fetchChatbots = async () => {
     try {
       setLoading(true);
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3003/api/chatbots', {
+      const res = await axios.get(`${API_BASE_URL}/api/chatbots`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -32,7 +35,7 @@ const useChatbots = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3003/api/chatbots', chatbotData, {
+      const res = await axios.post(`${API_BASE_URL}/api/chatbots`, chatbotData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -54,7 +57,7 @@ const useChatbots = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:3003/api/chatbots/${id}`, chatbotData, {
+      const res = await axios.put(`${API_BASE_URL}/api/chatbots/${id}`, chatbotData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -76,7 +79,7 @@ const useChatbots = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3003/api/chatbots/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/chatbots/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

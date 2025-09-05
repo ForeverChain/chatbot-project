@@ -47,6 +47,39 @@ A full-stack chatbot platform built with React, Vite, Node.js, Express, Prisma, 
    npm install
    ```
 
+## Environment Variables
+
+### Backend
+Create a `backend/.env` file with the following variables:
+```
+# Development Environment Variables
+NODE_ENV=development
+PORT=3003
+
+# Database - Update with your MySQL credentials
+DATABASE_URL="mysql://username:password@localhost:3306/chatbot"
+
+# Security - Generate strong secrets
+JWT_SECRET=your_jwt_secret_here
+BCRYPT_SALT_ROUNDS=10
+
+# Facebook Integration (Development)
+# FACEBOOK_PAGE_ACCESS_TOKEN=your_development_page_access_token
+# FACEBOOK_VERIFY_TOKEN=your_development_verify_token
+# FACEBOOK_APP_SECRET=your_development_app_secret
+```
+
+### Frontend
+Create a `frontend/.env` file with the following variables:
+```
+# Development Environment Variables
+VITE_API_URL=http://localhost:3003
+```
+
+For different environments, you can use:
+- `frontend/.env.production` - for production settings
+- `frontend/.env.staging` - for staging settings
+
 ## Database Setup
 
 1. Create a MySQL database for the project

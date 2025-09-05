@@ -14,6 +14,9 @@ const MessageTemplates = () => {
     content: ''
   });
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   useEffect(() => {
     fetchTemplates();
   }, [chatbotId]);
@@ -21,7 +24,7 @@ const MessageTemplates = () => {
   const fetchTemplates = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3003/api/templates/chatbot/${chatbotId}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/templates/chatbot/${chatbotId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -53,7 +56,7 @@ const MessageTemplates = () => {
     if (window.confirm('Are you sure you want to delete this template?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3003/api/templates/${id}`, {
+        await axios.delete(`${API_BASE_URL}/api/templates/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -72,7 +75,7 @@ const MessageTemplates = () => {
       if (editingTemplate) {
         // Update existing template
         const res = await axios.put(
-          `http://localhost:3003/api/templates/${editingTemplate.id}`,
+          `${API_BASE_URL}/api/templates/${editingTemplate.id}`,
           formData,
           {
             headers: {
@@ -84,7 +87,7 @@ const MessageTemplates = () => {
       } else {
         // Create new template
         const res = await axios.post(
-          'http://localhost:3003/api/templates',
+          `${API_BASE_URL}/api/templates`,
           { ...formData, chatbotId },
           {
             headers: {

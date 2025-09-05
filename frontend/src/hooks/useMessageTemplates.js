@@ -6,13 +6,16 @@ const useMessageTemplates = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   const fetchTemplates = async (chatbotId) => {
     try {
       setLoading(true);
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3003/api/templates/chatbot/${chatbotId}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/templates/chatbot/${chatbotId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -34,7 +37,7 @@ const useMessageTemplates = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3003/api/templates', 
+      const res = await axios.post(`${API_BASE_URL}/api/templates`, 
         { ...templateData, chatbotId },
         {
           headers: {
@@ -59,7 +62,7 @@ const useMessageTemplates = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:3003/api/templates/${templateId}`, templateData, {
+      const res = await axios.put(`${API_BASE_URL}/api/templates/${templateId}`, templateData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -81,7 +84,7 @@ const useMessageTemplates = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3003/api/templates/${templateId}`, {
+      await axios.delete(`${API_BASE_URL}/api/templates/${templateId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

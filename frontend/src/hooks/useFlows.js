@@ -6,13 +6,16 @@ const useFlows = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   const fetchFlows = async (chatbotId) => {
     try {
       setLoading(true);
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3003/api/flows/chatbot/${chatbotId}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/flows/chatbot/${chatbotId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -34,7 +37,7 @@ const useFlows = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.post(`http://localhost:3003/api/flows/chatbot/${chatbotId}`, flowData, {
+      const res = await axios.post(`${API_BASE_URL}/api/flows/chatbot/${chatbotId}`, flowData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -56,7 +59,7 @@ const useFlows = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:3003/api/flows/${flowId}`, flowData, {
+      const res = await axios.put(`${API_BASE_URL}/api/flows/${flowId}`, flowData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -78,7 +81,7 @@ const useFlows = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3003/api/flows/${flowId}`, {
+      await axios.delete(`${API_BASE_URL}/api/flows/${flowId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

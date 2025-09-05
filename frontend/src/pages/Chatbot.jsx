@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../services/axiosInstance';
 import { io } from 'socket.io-client';
 import FlowBuilder from './FlowBuilder';
 
@@ -34,7 +34,8 @@ const Chatbot = () => {
     }
     
     // Initialize socket connection
-    socket = io('http://localhost:3003');
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+    socket = io(API_BASE_URL);
     
     socket.on('connect', () => {
       console.log('Серверт холбогдлоо');
@@ -67,7 +68,7 @@ const Chatbot = () => {
 
   const fetchChatbot = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/chatbots/${id}`, {
+      const response = await axios.get(`/chatbots/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -83,7 +84,7 @@ const Chatbot = () => {
 
   const fetchConversations = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/conversations/${id}`, {
+      const response = await axios.get(`/conversations/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -97,7 +98,7 @@ const Chatbot = () => {
 
   const fetchCustomization = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/customization/chatbot/${id}`, {
+      const response = await axios.get(`/customization/chatbot/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,7 +112,7 @@ const Chatbot = () => {
 
   const fetchTemplates = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/templates/chatbot/${id}`, {
+      const response = await axios.get(`/templates/chatbot/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -125,7 +126,7 @@ const Chatbot = () => {
 
   const fetchAnalytics = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/analytics/chatbot/${id}`, {
+      const response = await axios.get(`/analytics/chatbot/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -140,7 +141,7 @@ const Chatbot = () => {
   // Fetch flows to display flow info
   const fetchFlows = async (token) => {
     try {
-      const response = await axios.get(`http://localhost:3003/api/flows/chatbot/${id}`, {
+      const response = await axios.get(`/flows/chatbot/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -156,7 +157,7 @@ const Chatbot = () => {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await axios.post('http://localhost:3003/api/conversations', {
+      const response = await axios.post('/conversations', {
         chatbotId: id
       }, {
         headers: {
@@ -214,7 +215,7 @@ const Chatbot = () => {
     
     try {
       const response = await axios.post(
-        `http://localhost:3003/api/customization/chatbot/${id}`,
+        `/customization/chatbot/${id}`,
         customization,
         {
           headers: {
@@ -235,7 +236,7 @@ const Chatbot = () => {
     
     try {
       await axios.post(
-        `http://localhost:3003/api/templates/chatbot/${id}/apply/${templateId}`,
+        `/templates/chatbot/${id}/apply/${templateId}`,
         {},
         {
           headers: {

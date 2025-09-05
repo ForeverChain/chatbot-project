@@ -21,6 +21,9 @@ const Analytics = () => {
   const [error, setError] = useState('');
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   useEffect(() => {
     fetchAnalyticsData();
   }, [chatbotId, dateRange]);
@@ -32,7 +35,7 @@ const Analytics = () => {
       if (dateRange.startDate) params.startDate = dateRange.startDate;
       if (dateRange.endDate) params.endDate = dateRange.endDate;
       
-      const res = await axios.get(`http://localhost:3003/api/analytics/chatbot/${chatbotId}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/analytics/chatbot/${chatbotId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         },

@@ -6,12 +6,15 @@ const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Use environment variable for API base URL, with a fallback
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError('');
       
-      const res = await axios.post('http://localhost:3003/api/auth/login', {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email,
         password
       });
@@ -33,7 +36,7 @@ const useAuth = () => {
       setLoading(true);
       setError('');
       
-      const res = await axios.post('http://localhost:3003/api/auth/register', {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
         name,
         email,
         password
@@ -64,7 +67,7 @@ const useAuth = () => {
         return;
       }
       
-      const res = await axios.get('http://localhost:3003/api/auth/me', {
+      const res = await axios.get(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../services/axiosInstance';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -35,7 +35,7 @@ const Dashboard = () => {
 
   const fetchChatbots = async (token) => {
     try {
-      const response = await axios.get('http://localhost:3003/api/chatbots', {
+      const response = await axios.get('/chatbots', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
   const fetchIntegrations = async (token) => {
     try {
-      const response = await axios.get('http://localhost:3003/api/integrations', {
+      const response = await axios.get('/integrations', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -68,7 +68,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await axios.post('http://localhost:3003/api/chatbots', {
+      const response = await axios.post('/chatbots', {
         name,
         description
       }, {
@@ -105,7 +105,7 @@ const Dashboard = () => {
         };
       }
       
-      const response = await axios.post('http://localhost:3003/api/integrations', 
+      const response = await axios.post('/integrations', 
         integrationData,
         {
           headers: {
@@ -118,7 +118,7 @@ const Dashboard = () => {
       if (integrationType === 'facebook' && response.data.id) {
         try {
           const verifyResponse = await axios.post(
-            `http://localhost:3003/api/integrations/${response.data.id}/generate-verify-token`,
+            `/integrations/${response.data.id}/generate-verify-token`,
             {},
             {
               headers: {
@@ -155,7 +155,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     
     try {
-      await axios.delete(`http://localhost:3003/api/chatbots/${chatbotId}`, {
+      await axios.delete(`/chatbots/${chatbotId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -172,7 +172,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     
     try {
-      await axios.delete(`http://localhost:3003/api/integrations/${integrationId}`, {
+      await axios.delete(`/integrations/${integrationId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -219,7 +219,7 @@ const Dashboard = () => {
       }
       
       const response = await axios.put(
-        `http://localhost:3003/api/integrations/${editingIntegrationId}`, 
+        `/integrations/${editingIntegrationId}`, 
         integrationData,
         {
           headers: {
