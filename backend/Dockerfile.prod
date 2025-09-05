@@ -10,14 +10,17 @@ RUN apk add --no-cache openssl
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install production dependencies only with legacy peer deps to avoid conflicts
-RUN npm ci --only=production --legacy-peer-deps
+# Install all dependencies (including dev dependencies needed for Prisma generation)
+RUN npm ci --legacy-peer-deps
 
 # Copy Prisma schema
 COPY prisma ./prisma/
 
 # Generate Prisma Client for the Linux platform
 RUN npx prisma generate
+
+# Remove dev dependencies to reduce image size
+RUN npm prune --production
 
 # Copy the rest of the application code
 COPY . .
