@@ -1,0 +1,99 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "type": "question",
+      "position": {
+        "x": 250,
+        "y": 50
+      },
+      "data": {
+        "label": "What is your favorite programming language?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "JavaScript"
+          },
+          {
+            "id": "opt2",
+            "text": "Python"
+          },
+          {
+            "id": "opt3",
+            "text": "Java"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "type": "message",
+      "position": {
+        "x": 100,
+        "y": 200
+      },
+      "data": {
+        "label": "Great choice! JavaScript is versatile and widely used in web development."
+      }
+    },
+    {
+      "id": "3",
+      "type": "message",
+      "position": {
+        "x": 300,
+        "y": 200
+      },
+      "data": {
+        "label": "Python is great for data science, AI, and backend development!"
+      }
+    },
+    {
+      "id": "4",
+      "type": "condition",
+      "position": {
+        "x": 500,
+        "y": 200
+      },
+      "data": {
+        "label": "Score Check",
+        "expression": "score >= 5"
+      }
+    },
+    {
+      "id": "5",
+      "type": "final",
+      "position": {
+        "x": 500,
+        "y": 350
+      },
+      "data": {
+        "label": "Congratulations! You passed the programming quiz."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "1",
+      "target": "2",
+      "sourceHandle": "opt1"
+    },
+    {
+      "id": "e1-3",
+      "source": "1",
+      "target": "3",
+      "sourceHandle": "opt2"
+    },
+    {
+      "id": "e1-4",
+      "source": "1",
+      "target": "4",
+      "sourceHandle": "opt3"
+    },
+    {
+      "id": "e4-5",
+      "source": "4",
+      "target": "5"
+    }
+  ]
+}
