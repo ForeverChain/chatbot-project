@@ -1,9 +1,9 @@
 services:
   - type: web
     name: chatbot-backend-production
-    env: node
-    buildCommand: npm install
-    startCommand: npm start
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     envVars:
       - key: NODE_ENV
         value: production
