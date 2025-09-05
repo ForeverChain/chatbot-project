@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+// Use Render's PORT or default to 3003
 const PORT = process.env.PORT || 3003;
 
 // Middleware
@@ -29,7 +30,7 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
