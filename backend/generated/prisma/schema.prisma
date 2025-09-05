@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  name         String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  chatbots     Chatbot[]
+  integrations Integration[]
+  analytics    Analytics[]
+}
+
+model Chatbot {
+  id            Int                   @id @default(autoincrement())
+  name          String
+  description   String?
+  userId        Int
+  user          User                  @relation(fields: [userId], references: [id])
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  conversations Conversation[]
+  integrations  Integration[]
+  templates     MessageTemplate[]
+  customization ChatbotCustomization?
+  flows         Flow[]
+  analytics     Analytics[]
+}
+
+model Conversation {
+  id        Int       @id @default(autoincrement())
+  chatbotId Int
+  chatbot   Chatbot   @relation(fields: [chatbotId], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  content        String
+  sender         String // "user" or "bot"
+  createdAt      DateTime     @default(now())
+}
+
+model Integration {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  type      String // "facebook", "instagram", etc.
+  token     String?  @db.Text // For storing access tokens
+  config    String?  @db.Text // For storing platform-specific configuration as JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chatbotId Int?
+  chatbot   Chatbot? @relation(fields: [chatbotId], references: [id])
+}
+
+model MessageTemplate {
+  id        Int      @id @default(autoincrement())
+  chatbotId Int
+  chatbot   Chatbot  @relation(fields: [chatbotId], references: [id])
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatbotCustomization {
+  id          Int      @id @default(autoincrement())
+  chatbotId   Int      @unique
+  chatbot     Chatbot  @relation(fields: [chatbotId], references: [id])
+  name        String?
+  avatar      String?
+  greeting    String?
+  personality String?
+  tone        String?
+  language    String?
+  config      String   @db.Text // JSON configuration for advanced settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Flow {
+  id        Int      @id @default(autoincrement())
+  chatbotId Int
+  chatbot   Chatbot  @relation(fields: [chatbotId], references: [id])
+  name      String
+  steps     String   @db.Text // JSON array of flow steps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Analytics {
+  id        Int      @id @default(autoincrement())
+  chatbotId Int
+  chatbot   Chatbot  @relation(fields: [chatbotId], references: [id])
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  timestamp DateTime @default(now())
+}
