@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Use VITE_API_URL environment variable or default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:3003/api',
+  baseURL: `${API_BASE_URL}/api`,
 });
 
 // Add a request interceptor to include the JWT token
