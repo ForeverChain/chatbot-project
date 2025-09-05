@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: chatbot-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: chatbot
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: chatbotuser
+      MYSQL_PASSWORD: chatbotpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend Service
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chatbot-backend
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: mysql://chatbotuser:chatbotpassword@mysql:3306/chatbot
+      PORT: 3003
+      FACEBOOK_PAGE_ACCESS_TOKEN: your_default_page_access_token_here
+      FACEBOOK_VERIFY_TOKEN: your_default_verify_token_here
+      FACEBOOK_APP_SECRET: your_default_app_secret_here
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: chatbot-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:
