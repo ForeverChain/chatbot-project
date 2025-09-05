@@ -30,27 +30,6 @@ app.use('/api/integrations', require('./routes/integrations'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/analytics', require('./routes/analytics'));
 
-// Temporary migration endpoint for fixing database schema issues
-// Remove this endpoint after the issue is resolved
-if (process.env.NODE_ENV === 'production') {
-  app.post('/api/migrate', async (req, res) => {
-    try {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      
-      // Run migrations
-      const { execSync } = require('child_process');
-      const output = execSync('npx prisma migrate deploy', { encoding: 'utf-8' });
-      
-      await prisma.$disconnect();
-      res.status(200).json({ message: 'Migrations applied successfully', output });
-    } catch (error) {
-      console.error('Migration error:', error);
-      res.status(500).json({ error: 'Migration failed', details: error.message });
-    }
-  });
-}
-
 // Health check endpoint for production monitoring
 app.get('/health', (req, res) => {
   res.status(200).json({ 

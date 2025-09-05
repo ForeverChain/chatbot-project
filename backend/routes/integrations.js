@@ -374,9 +374,36 @@ router.get('/facebook/webhook', async (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
   
-  // In a production environment, you might want to verify which integration this is for
-  // For now, we'll just use the default verification
-  const result = facebookService.verifyWebhook({}, mode, token, challenge);
+  // First try to find an integration that matches this verify token
+  let integration = {};
+  
+  if (token) {
+    try {
+      // Find integration by verify token in config
+      const integrations = await prisma.integration.findMany({
+        where: {
+          type: 'facebook',
+          config: {
+            contains: token
+          }
+        }
+      });
+      
+      // Filter to find the exact match
+      integration = integrations.find(int => {
+        try {
+          const config = JSON.parse(int.config);
+          return config && config.verifyToken === token;
+        } catch (e) {
+          return false;
+        }
+      }) || {};
+    } catch (error) {
+      console.error('Error finding integration by verify token:', error);
+    }
+  }
+  
+  const result = facebookService.verifyWebhook(integration, mode, token, challenge);
   
   if (result.success) {
     res.status(200).send(result.challenge);
