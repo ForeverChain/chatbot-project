@@ -476,7 +476,7 @@ function verifyRequestSignature(req, res, buf, encoding) {
 }
 
 // Facebook Webhook for receiving messages
-router.post('/facebook/webhook', express.json({ verify: verifyRequestSignature }), async (req, res) => {
+router.post('/facebook/webhook', express.json(), async (req, res) => {
   console.log('=== FACEBOOK WEBHOOK MESSAGE REQUEST ===');
   console.log('Request headers:', req.headers);
   console.log('Request body:', JSON.stringify(req.body, null, 2));
