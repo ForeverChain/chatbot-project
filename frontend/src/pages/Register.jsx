@@ -14,7 +14,7 @@ const Register = () => {
   const navigate = useNavigate();
 
   // Use environment variable for API base URL, with a fallback
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3004';
 
   const { name, email, password, confirmPassword } = formData;
 
