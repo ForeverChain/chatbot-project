@@ -51,7 +51,7 @@ class FacebookService {
     if (mode && token) {
       if (mode === 'subscribe' && token === credentials.verifyToken) {
         console.log(`Facebook webhook verified successfully for integration ${integration.id}`);
-        return { success: true, challenge };
+        res.status(200).send(challenge);
       } else {
         console.log(`Facebook webhook verification failed for integration ${integration.id}:`, {
           expectedToken: credentials.verifyToken,
@@ -59,7 +59,7 @@ class FacebookService {
           tokensMatch: token === credentials.verifyToken,
           modeValid: mode === 'subscribe'
         });
-        return { success: false, status: 403 };
+        res.sendStatus(403);
       }
     } else {
       console.log('Missing mode or token for webhook verification');
@@ -224,20 +224,23 @@ class FacebookService {
     
     try {
       // Extract the signature hash
-      const signatureHash = signature.split('sha256=')[1];
+      const signatureHash = signature.split('sha256=')[1] || signature.split('sha1=')[1];
       if (!signatureHash) {
         console.error('Invalid signature format');
         return false;
       }
       
+      // Determine which algorithm to use
+      const algorithm = signature.includes('sha256=') ? 'sha256' : 'sha1';
+      
       // Create expected hash using app secret
       const expectedHash = crypto
-        .createHmac('sha256', this.defaultAppSecret)
+        .createHmac(algorithm, this.defaultAppSecret)
         .update(payload, 'utf8')
         .digest('hex');
       
       // Compare hashes securely
-      const expectedSignature = `sha256=${expectedHash}`;
+      const expectedSignature = `${algorithm}=${expectedHash}`;
       const isValid = crypto.timingSafeEqual(
         Buffer.from(signature, 'utf8'),
         Buffer.from(expectedSignature, 'utf8')

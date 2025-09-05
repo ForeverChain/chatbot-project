@@ -11,14 +11,14 @@ async function testFacebookIntegration() {
       type: 'facebook',
       token: 'your-page-access-token-here',
       config: {
-        pageId: 'your-page-id-here',
+        pageId: '0', // Based on your logs, this should be '0'
         verifyToken: 'your-verify-token-here',
         appId: 'your-app-id-here'
       }
     };
 
-    // Make the API request (you'll need to adjust the URL based on your server)
-    const response = await axios.post('http://localhost:3000/integrations', integrationData, {
+    // Make the API request to your deployed server
+    const response = await axios.post('https://chatbot-project-ymdb.onrender.com/api/integrations', integrationData, {
       headers: {
         'Authorization': 'Bearer your-jwt-token-here', // You'll need to replace this with a valid JWT token
         'Content-Type': 'application/json'
