@@ -12,9 +12,21 @@ class FacebookService {
 
   // Get integration-specific credentials
   getCredentials(integration) {
+    console.log('Getting credentials for integration:', integration);
+    
+    let config = {};
+    if (integration.config) {
+      try {
+        config = JSON.parse(integration.config);
+        console.log('Parsed config:', config);
+      } catch (e) {
+        console.error('Error parsing config:', e);
+      }
+    }
+    
     return {
       pageAccessToken: integration.token || this.defaultPageAccessToken,
-      verifyToken: (integration.config && integration.config.verifyToken) || this.defaultVerifyToken,
+      verifyToken: config.verifyToken || this.defaultVerifyToken,
       appSecret: this.defaultAppSecret // App secret is typically app-wide
     };
   }
