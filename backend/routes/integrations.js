@@ -374,6 +374,8 @@ router.get('/facebook/webhook', async (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
   
+  console.log('Facebook webhook verification request received:', { mode, token, challenge });
+  
   // First try to find an integration that matches this verify token
   let integration = {};
   
@@ -389,21 +391,28 @@ router.get('/facebook/webhook', async (req, res) => {
         }
       });
       
+      console.log('Found integrations with matching token:', integrations.length);
+      
       // Filter to find the exact match
       integration = integrations.find(int => {
         try {
           const config = JSON.parse(int.config);
           return config && config.verifyToken === token;
         } catch (e) {
+          console.error('Error parsing config for integration:', int.id, e);
           return false;
         }
       }) || {};
+      
+      console.log('Selected integration:', integration.id);
     } catch (error) {
       console.error('Error finding integration by verify token:', error);
     }
   }
   
   const result = facebookService.verifyWebhook(integration, mode, token, challenge);
+  
+  console.log('Webhook verification result:', result);
   
   if (result.success) {
     res.status(200).send(result.challenge);
