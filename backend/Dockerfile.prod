@@ -31,5 +31,5 @@ USER nextjs
 # Expose the port the app runs on
 EXPOSE 3003
 
-# Start the application with migrations using the correct entry point
-CMD ["node", "server.js"]
+# Run migrations and start the application
+CMD ["./scripts/docker-migrate.sh"]
