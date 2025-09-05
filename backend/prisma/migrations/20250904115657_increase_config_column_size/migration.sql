@@ -1,2 +1,5 @@
--- Alter the BotTemplate table to increase the size of the config column
-ALTER TABLE `BotTemplate` MODIFY `config` TEXT NOT NULL;
+-- This migration is obsolete because the BotTemplate table was dropped
+-- It has been replaced with MessageTemplate table
+
+-- No operation needed - table no longer exists
+-- The MessageTemplate table now handles this functionality

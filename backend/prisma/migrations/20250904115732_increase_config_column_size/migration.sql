@@ -1,2 +1,5 @@
--- AlterTable
-ALTER TABLE `bottemplate` MODIFY `config` VARCHAR(191) NOT NULL;
+-- This migration is obsolete because the bottemplate table was dropped
+-- It has been replaced with MessageTemplate table
+
+-- No operation needed - table no longer exists
+-- The MessageTemplate table now handles this functionality
