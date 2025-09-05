@@ -23,14 +23,29 @@ class FacebookService {
   verifyWebhook(integration, mode, token, challenge) {
     const credentials = this.getCredentials(integration);
     
+    console.log('Verifying webhook with:', { 
+      integrationId: integration.id, 
+      mode, 
+      token, 
+      challenge,
+      credentials 
+    });
+    
     if (mode && token) {
       if (mode === 'subscribe' && token === credentials.verifyToken) {
         console.log(`Facebook webhook verified successfully for integration ${integration.id}`);
         return { success: true, challenge };
       } else {
+        console.log(`Facebook webhook verification failed for integration ${integration.id}:`, {
+          expectedToken: credentials.verifyToken,
+          receivedToken: token,
+          tokensMatch: token === credentials.verifyToken,
+          modeValid: mode === 'subscribe'
+        });
         return { success: false, status: 403 };
       }
     } else {
+      console.log('Missing mode or token for webhook verification');
       return { success: false, status: 400 };
     }
   }
