@@ -141,6 +141,7 @@ exports.Prisma.ChatbotScalarFieldEnum = {
 exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
   chatbotId: 'chatbotId',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -223,6 +224,10 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
 exports.Prisma.ChatbotOrderByRelevanceFieldEnum = {
   name: 'name',
   description: 'description'
+};
+
+exports.Prisma.ConversationOrderByRelevanceFieldEnum = {
+  userId: 'userId'
 };
 
 exports.Prisma.MessageOrderByRelevanceFieldEnum = {

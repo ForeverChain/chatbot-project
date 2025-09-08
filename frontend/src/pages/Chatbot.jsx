@@ -494,8 +494,48 @@ const Chatbot = () => {
               </div>
             </div>
           ) : showFlows ? (
-            // Using FlowBuilder component with chatbot ID
-            <FlowBuilder chatbotId={id} />
+            // Show flow list first, then flow builder when a flow is selected
+            <div className="flows-panel">
+              <div className="flex justify-between items-center mb-4">
+                <h2>Чатботын урсгалууд</h2>
+                <button 
+                  onClick={() => navigate(`/flow-builder/${id}/new`)}
+                  className="btn primary"
+                >
+                  Шинэ урсгал үүсгэх
+                </button>
+              </div>
+              
+              {flows.length > 0 ? (
+                <div className="flows-grid">
+                  {flows.map((flow) => (
+                    <div 
+                      key={flow.id} 
+                      className="flow-card card cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate(`/flow-builder/${id}/${flow.id}`)}
+                    >
+                      <h3>{flow.name}</h3>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {flow.steps?.nodes?.length || 0} node, {flow.steps?.edges?.length || 0} холболт
+                      </p>
+                      <div className="mt-3 text-xs text-gray-500">
+                        Шинэчлэгдсэн: {new Date(flow.updatedAt || flow.createdAt).toLocaleDateString('mn-MN')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="mb-4">Та одоогоор урсгал үүсгээгүй байна.</p>
+                  <button 
+                    onClick={() => navigate(`/flow-builder/${id}/new`)}
+                    className="btn primary"
+                  >
+                    Эхний урсгалаа үүсгэх
+                  </button>
+                </div>
+              )}
+            </div>
           ) : currentConversation ? (
             <>
               {/* Display active flow info */}

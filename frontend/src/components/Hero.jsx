@@ -1,8 +1,22 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Bot } from "lucide-react"; // Chatbot icon
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = (e) => {
+    e.preventDefault();
+    console.log("Navigating to /register");
+    navigate("/register");
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    console.log("Navigating to /login");
+    navigate("/login");
+  };
+
   return (
     <header className="relative bg-white">
       {/* Container */}
@@ -24,18 +38,18 @@ const Hero = () => {
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link
-            to="/register"
+          <button
+            onClick={handleGetStarted}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
-          >
+          > 
             Эхлэх
-          </Link>
-          <Link
-            to="/login"
+          </button>
+          <button
+            onClick={handleLogin}
             className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition"
           >
             Нэвтрэх
-          </Link>
+          </button>
         </div>
 
         {/* Optional Illustration */}

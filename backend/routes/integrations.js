@@ -31,6 +31,7 @@ router.post('/', auth, async (req, res) => {
 
     // Add config if provided (for Facebook Page ID, etc.)
     if (config) {
+      console.log('Adding config to integration:', config);
       integrationData.config = JSON.stringify(config);
     }
 
@@ -295,7 +296,7 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Generate and save verify token for Facebook integration
+// Generate and save verify token for Facebook/Instagram integration
 router.post('/:id/generate-verify-token', auth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -320,9 +321,9 @@ router.post('/:id/generate-verify-token', auth, async (req, res) => {
       return res.status(404).json({ error: 'Integration not found' });
     }
 
-    // Check if it's a Facebook integration
-    if (integration.type !== 'facebook') {
-      return res.status(400).json({ error: 'Verify token can only be generated for Facebook integrations' });
+    // Check if it's a Facebook or Instagram integration
+    if (integration.type !== 'facebook' && integration.type !== 'instagram') {
+      return res.status(400).json({ error: 'Verify token can only be generated for Facebook or Instagram integrations' });
     }
 
     // Generate a random verify token
@@ -361,6 +362,53 @@ router.post('/:id/generate-verify-token', auth, async (req, res) => {
       message: 'Verify token generated successfully',
       verifyToken: verifyToken,
       integration: parsedIntegration
+    });
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Integration not found' });
+    }
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Test Facebook/Instagram page access token
+router.post('/:id/test-token', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Get the integration and verify it belongs to the user
+    const integration = await prisma.integration.findUnique({
+      where: {
+        id: parseInt(id),
+        OR: [
+          { userId: userId },
+          { chatbot: { userId: userId } }
+        ]
+      },
+      include: {
+        chatbot: true,
+        user: true
+      },
+    });
+
+    if (!integration) {
+      return res.status(404).json({ error: 'Integration not found' });
+    }
+
+    // Check if it's a Facebook or Instagram integration
+    if (integration.type !== 'facebook' && integration.type !== 'instagram') {
+      return res.status(400).json({ error: 'Token test can only be performed for Facebook or Instagram integrations' });
+    }
+
+    // Test the page access token
+    const facebookService = require('../services/facebookService');
+    const testResult = await facebookService.testPageAccessToken(integration.token);
+    
+    res.json({
+      message: 'Token test completed',
+      result: testResult
     });
   } catch (error) {
     console.error(error);
@@ -431,13 +479,17 @@ router.get('/facebook/webhook', async (req, res) => {
     }
   }
   
+  // Call the Facebook service to verify the webhook
   const result = facebookService.verifyWebhook(integration, mode, token, challenge);
   
   console.log('Webhook verification result:', result);
   
+  // Send the appropriate response based on verification result
   if (result.success) {
+    console.log('Webhook verified successfully, sending challenge:', result.challenge);
     res.status(200).send(result.challenge);
   } else {
+    console.log('Webhook verification failed with status:', result.status);
     res.status(result.status).json({ 
       error: 'Webhook verification failed',
       details: `Invalid ${mode === 'subscribe' ? 'token' : 'mode'}` 
@@ -494,7 +546,7 @@ router.post('/facebook/webhook', express.json(), async (req, res) => {
     
     // Iterate over each entry - there may be multiple if batched
     for (const entry of entries) {
-      console.log('Processing entry:', entry);
+      console.log('Processing entry:', JSON.stringify(entry, null, 2));
       
       // Check if we have messaging events
       const messagingEvents = entry.messaging || entry.messaging_events || [];
@@ -505,7 +557,7 @@ router.post('/facebook/webhook', express.json(), async (req, res) => {
       
       // Process each messaging event (there might be multiple in one entry)
       for (const webhookEvent of messagingEvents) {
-        console.log('Processing Facebook webhook event:', webhookEvent);
+        console.log('Processing Facebook webhook event:', JSON.stringify(webhookEvent, null, 2));
 
         // Get the sender PSID
         const senderPsid = webhookEvent.sender && webhookEvent.sender.id;
@@ -514,12 +566,36 @@ router.post('/facebook/webhook', express.json(), async (req, res) => {
           continue;
         }
         
+        console.log('Sender PSID:', senderPsid);
+        console.log('Sender object:', webhookEvent.sender);
+        
         // Find integration by page ID
         let integration = null;
         const pageId = entry.id;
+        console.log('Webhook entry details:', JSON.stringify(entry, null, 2));
         if (pageId) {
+          console.log('Looking up integration for page ID:', pageId);
+          console.log('Page ID type:', typeof pageId);
           integration = await facebookService.findIntegrationByPageId(pageId);
           console.log('Found integration by page ID:', integration ? integration.id : 'none');
+          if (integration) {
+            console.log('Integration details:', JSON.stringify(integration, null, 2));
+          } else {
+            console.log('No integration found for page ID:', pageId);
+            // Let's also try to list all Facebook integrations to debug
+            try {
+              const allFacebookIntegrations = await prisma.integration.findMany({
+                where: {
+                  type: 'facebook'
+                }
+              });
+              console.log('All Facebook integrations:', JSON.stringify(allFacebookIntegrations, null, 2));
+            } catch (listError) {
+              console.error('Error listing Facebook integrations:', listError);
+            }
+          }
+        } else {
+          console.log('No page ID found in entry');
         }
         
         // Handle different types of events
@@ -560,5 +636,221 @@ router.post('/facebook/webhook', express.json(), async (req, res) => {
   }
 });
 
+// Instagram Webhook verification endpoint
+router.get('/instagram/webhook', async (req, res) => {
+  console.log('=== INSTAGRAM WEBHOOK VERIFICATION REQUEST ===');
+  console.log('Request headers:', req.headers);
+  console.log('Request query:', req.query);
+  console.log('Request URL:', req.url);
+  console.log('Request method:', req.method);
+  
+  const mode = req.query['hub.mode'] || req.query.hub_mode;
+  const token = req.query['hub.verify_token'] || req.query.hub_verify_token;
+  const challenge = req.query['hub.challenge'] || req.query.hub_challenge;
+  
+  console.log('Extracted parameters:', { mode, token, challenge });
+  
+  // Validate required parameters
+  if (!mode || !token || !challenge) {
+    console.log('Missing required parameters for webhook verification');
+    return res.status(400).json({ 
+      error: 'Missing required parameters', 
+      received: { mode: !!mode, token: !!token, challenge: !!challenge }
+    });
+  }
+  
+  // First try to find an integration that matches this verify token
+  let integration = {};
+  
+  if (token) {
+    try {
+      // Find integration by verify token in config
+      const integrations = await prisma.integration.findMany({
+        where: {
+          type: 'instagram'
+        }
+      });
+      
+      console.log('Found Instagram integrations:', integrations.length);
+      
+      // Filter to find the exact match by parsing each config
+      integration = integrations.find(int => {
+        try {
+          const config = typeof int.config === 'string' 
+            ? JSON.parse(int.config) 
+            : int.config;
+          return config && config.verifyToken === token;
+        } catch (e) {
+          console.error('Error parsing config for integration:', int.id, e);
+          return false;
+        }
+      }) || {};
+      
+      console.log('Selected integration:', integration.id);
+    } catch (error) {
+      console.error('Error finding integration by verify token:', error);
+      return res.status(500).json({ 
+        error: 'Internal server error while verifying webhook',
+        details: error.message 
+      });
+    }
+  }
+  
+  // Call the Facebook service to verify the webhook (same verification logic works for Instagram)
+  const result = facebookService.verifyWebhook(integration, mode, token, challenge);
+  
+  console.log('Webhook verification result:', result);
+  
+  // Send the appropriate response based on verification result
+  if (result.success) {
+    console.log('Webhook verified successfully, sending challenge:', result.challenge);
+    res.status(200).send(result.challenge);
+  } else {
+    console.log('Webhook verification failed with status:', result.status);
+    res.status(result.status).json({ 
+      error: 'Webhook verification failed',
+      details: `Invalid ${mode === 'subscribe' ? 'token' : 'mode'}` 
+    });
+  }
+});
+
+// Function to verify Instagram request signature (same as Facebook)
+function verifyInstagramRequestSignature(req, res, buf, encoding) {
+  console.log('=== VERIFYING INSTAGRAM REQUEST SIGNATURE ===');
+  console.log('Request headers:', req.headers);
+  console.log('Request body buffer length:', buf.length);
+  
+  const signature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
+  
+  console.log('Instagram signature:', signature);
+  
+  if (!signature) {
+    console.warn('Instagram webhook signature missing - this may be a test request');
+    // For production, you might want to reject requests without signature
+    // But for development/testing, we'll allow it to continue
+    return;
+  } else {
+    // Verify the signature using the Facebook service
+    const isValid = facebookService.verifySignature(signature, buf);
+    if (!isValid) {
+      console.error('Invalid Instagram webhook signature');
+      // For debugging purposes during development, we'll log but not reject
+      // In production, you should reject invalid signatures:
+      // throw new Error('Invalid Instagram webhook signature');
+      console.log('Continuing with invalid signature for debugging purposes');
+    } else {
+      console.log('Instagram signature verified successfully');
+    }
+  }
+}
+
+// Instagram Webhook for receiving messages
+router.post('/instagram/webhook', express.json(), async (req, res) => {
+  console.log('=== INSTAGRAM WEBHOOK MESSAGE REQUEST ===');
+  console.log('Request headers:', req.headers);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  console.log('Request URL:', req.url);
+  console.log('Request method:', req.method);
+  
+  const body = req.body;
+
+  // Check if this is an event from a page subscription
+  if (body.object === 'instagram') {
+    console.log('Processing Instagram subscription event');
+    
+    // Handle case where body.entry is not an array
+    const entries = Array.isArray(body.entry) ? body.entry : [body.entry];
+    
+    // Iterate over each entry - there may be multiple if batched
+    for (const entry of entries) {
+      console.log('Processing entry:', JSON.stringify(entry, null, 2));
+      
+      // Check if we have messaging events
+      const messagingEvents = entry.messaging || entry.messaging_events || [];
+      if (!messagingEvents.length) {
+        console.log('No messaging events found in entry');
+        continue;
+      }
+      
+      // Process each messaging event (there might be multiple in one entry)
+      for (const webhookEvent of messagingEvents) {
+        console.log('Processing Instagram webhook event:', JSON.stringify(webhookEvent, null, 2));
+
+        // Get the sender PSID
+        const senderPsid = webhookEvent.sender && webhookEvent.sender.id;
+        if (!senderPsid) {
+          console.error('No sender PSID found in webhook event');
+          continue;
+        }
+        
+        console.log('Sender PSID:', senderPsid);
+        console.log('Sender object:', webhookEvent.sender);
+        
+        // Find integration by Instagram ID
+        let integration = null;
+        const instagramId = entry.id;
+        console.log('Webhook entry details:', JSON.stringify(entry, null, 2));
+        if (instagramId) {
+          console.log('Looking up integration for Instagram ID:', instagramId);
+          console.log('Instagram ID type:', typeof instagramId);
+          integration = await facebookService.findIntegrationByPageId(instagramId);
+          console.log('Found integration by Instagram ID:', integration ? integration.id : 'none');
+          if (integration) {
+            console.log('Integration details:', JSON.stringify(integration, null, 2));
+          } else {
+            console.log('No integration found for Instagram ID:', instagramId);
+            // Let's also try to list all Instagram integrations to debug
+            try {
+              const allInstagramIntegrations = await prisma.integration.findMany({
+                where: {
+                  type: 'instagram'
+                }
+              });
+              console.log('All Instagram integrations:', JSON.stringify(allInstagramIntegrations, null, 2));
+            } catch (listError) {
+              console.error('Error listing Instagram integrations:', listError);
+            }
+          }
+        } else {
+          console.log('No Instagram ID found in entry');
+        }
+        
+        // Handle different types of events
+        if (webhookEvent.message) {
+          // This is a user message
+          console.log(`Processing message from user ${senderPsid}:`, webhookEvent.message.text);
+          if (integration) {
+            await facebookService.processMessage(integration, senderPsid, webhookEvent.message);
+          } else {
+            // Use an empty object instead of {} to avoid issues
+            await facebookService.processMessage({id: null}, senderPsid, webhookEvent.message);
+          }
+        } else if (webhookEvent.postback) {
+          // This is a postback (button click)
+          console.log(`Processing postback from user ${senderPsid}:`, webhookEvent.postback.payload);
+          if (integration) {
+            await facebookService.processPostback(integration, senderPsid, webhookEvent.postback);
+          } else {
+            await facebookService.processPostback({id: null}, senderPsid, webhookEvent.postback);
+          }
+        } else if (webhookEvent.delivery) {
+          // This is a delivery confirmation - just log it
+          console.log(`Delivery confirmation for user ${senderPsid}:`, webhookEvent.delivery);
+        } else {
+          // Unknown event type
+          console.log('Unknown event type in webhook event:', Object.keys(webhookEvent));
+        }
+      }
+    }
+
+    // Return a '200 OK' response to all requests
+    console.log('Successfully processed Instagram webhook event');
+    res.status(200).send('EVENT_RECEIVED');
+  } else {
+    // Return a '404 Not Found' if event is not from an Instagram subscription
+    console.log('Received non-Instagram webhook event');
+    res.sendStatus(404);
+  }
+});
 
 module.exports = router;

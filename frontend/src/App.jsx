@@ -8,6 +8,7 @@ import FlowBuilder from './pages/FlowBuilder';
 import MessageTemplates from './pages/MessageTemplates';
 import Integrations from './pages/Integrations';
 import Analytics from './pages/Analytics';
+import ChatPage from './pages/Chat';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -80,6 +81,14 @@ function App() {
               <ProtectedRoute>
                 <Navbar />
                 <Analytics />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chat/:chatbotId" 
+            element={
+              <ProtectedRoute>
+                <ChatPage />
               </ProtectedRoute>
             } 
           />

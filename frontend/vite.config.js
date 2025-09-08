@@ -13,7 +13,12 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '0.0.0.0',
-      port: 3000
+      port: 3000,
+      strictPort: true,
+      // Allow requests from ngrok host
+      allowedHosts: [
+        '2848f0ecffd9.ngrok-free.app'
+      ]
     },
     build: {
       outDir: 'build'  // Changed from 'dist' to 'build' to match deployment expectations

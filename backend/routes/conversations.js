@@ -127,7 +127,8 @@ router.post('/:conversationId/messages', auth, async (req, res) => {
 
     if (flows.length > 0) {
       // Use flow-based response if flows exist
-      botResponse = flowService.generateFlowResponse(messages, flows[0]);
+      const flowResponse = flowService.generateFlowResponse(messages, flows[0]);
+      botResponse = flowResponse.text;
     } else {
       // Use AI service if no flows exist
       botResponse = await aiService.generateResponse(messages);

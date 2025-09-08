@@ -46,11 +46,16 @@ const FlowBuilder = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [flowName, setFlowName] = useState('Шинэ урсгал');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+
+  console.log("flowId", flowId)
+  console.log("chatbotId", chatbotId)
 
   // Load existing flow data when component mounts
   useEffect(() => {
     const loadFlowData = async () => {
-      if (flowId) {
+      // Check if we're creating a new flow (flowId is 'new') or editing an existing one
+      if (flowId && flowId !== 'new') {
         setIsLoading(true);
         try {
           const flowData = await flowService.getFlow(flowId);
@@ -67,7 +72,14 @@ const FlowBuilder = () => {
         } finally {
           setIsLoading(false);
         }
+      } else if (flowId === 'new') {
+        // Reset to initial state for new flow
+        setNodes([]);
+        setEdges([]);
+        setFlowName('Шинэ урсгал');
+        setIsCreatingNew(true);
       }
+      // If flowId is undefined, we might want to redirect or show an error
     };
 
     loadFlowData();
@@ -157,7 +169,7 @@ const FlowBuilder = () => {
     switch (type) {
       case 'question':
         return { 
-          label: 'Шинэ асуулт',
+          label: 'Шинэ асуултs',
           options: [
             { id: 'opt1', text: 'Сонголт 1' },
             { id: 'opt2', text: 'Сонголт 2' }
@@ -250,7 +262,7 @@ const FlowBuilder = () => {
         edges
       };
 
-      if (flowId) {
+      if (flowId && flowId !== 'new') {
         // Update existing flow
         const response = await flowService.updateFlow(flowId, flowData);
         console.log('Урсгал амжилттай шинэчлэгдлээ:', response);
@@ -260,6 +272,7 @@ const FlowBuilder = () => {
         const response = await flowService.createFlow(chatbotId, flowData);
         console.log('Урсгал амжилттай хадгалагдлаа:', response);
         alert('Урсгал амжилттай хадгалагдлаа!');
+        // After creating, we might want to update the URL to edit the new flow
       }
     } catch (error) {
       console.error('Урсгалыг хадгалахад алдаа гарлаа:', error);
