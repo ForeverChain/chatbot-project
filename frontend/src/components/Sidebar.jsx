@@ -41,18 +41,7 @@ const Sidebar = () => {
           </div>
         </div>
         
-        <div
-          className="p-4 bg-white border border-neutral-200 rounded-xl shadow-sm cursor-move hover:shadow-md transition-shadow duration-200 flex items-center space-x-3"
-          onDragStart={(event) => onDragStart(event, 'condition')}
-          draggable
-        >
-          <div className="text-yellow-500 text-xl">⚖️</div>
-          <div>
-            <div className="font-semibold text-gray-800">Нөхцөл</div>
-            <div className="text-xs text-gray-500">Нөхцөлт логик</div>
-          </div>
-        </div>
-        
+    
         <div
           className="p-4 bg-white border border-neutral-200 rounded-xl shadow-sm cursor-move hover:shadow-md transition-shadow duration-200 flex items-center space-x-3"
           onDragStart={(event) => onDragStart(event, 'final')}

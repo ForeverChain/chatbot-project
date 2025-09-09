@@ -32,6 +32,27 @@ const QuestionNode = ({ data }) => {
             />
           </div>
         ))}
+        {/* For free text questions (no options), show a default handle */}
+        {(!data.options || data.options.length === 0) && (
+          <div className="relative">
+            <div className="text-sm px-3 py-2 bg-blue-50 rounded-lg font-medium italic">
+              Чөлөөтэй текстээр хариулах
+            </div>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="free-text"
+              style={{ 
+                background: '#555',
+                width: 10,
+                height: 10,
+                right: -5,
+                top: '50%'
+              }}
+              className="border-2 border-white"
+            />
+          </div>
+        )}
       </div>
       
       <Handle

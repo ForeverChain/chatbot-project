@@ -480,9 +480,8 @@ const QuestionNodeEditor = ({ data, onChange, onClose, onDelete }) => {
   };
 
   const removeOption = (id) => {
-    if (options.length > 1) {
-      setOptions(options.filter(opt => opt.id !== id));
-    }
+    // Allow removing all options to create a free text question
+    setOptions(options.filter(opt => opt.id !== id));
   };
 
   return (
@@ -521,6 +520,11 @@ const QuestionNodeEditor = ({ data, onChange, onClose, onDelete }) => {
         >
           Сонголт нэмэх
         </button>
+        {options.length === 0 && (
+          <p className="text-xs text-gray-500 mt-2">
+            No options = Free text input question
+          </p>
+        )}
       </div>
       
       <div className="flex space-x-2 pt-2">

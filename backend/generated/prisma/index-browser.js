@@ -150,6 +150,7 @@ exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   conversationId: 'conversationId',
   content: 'content',
+  nodeId: 'nodeId',
   sender: 'sender',
   createdAt: 'createdAt'
 };
@@ -232,6 +233,7 @@ exports.Prisma.ConversationOrderByRelevanceFieldEnum = {
 
 exports.Prisma.MessageOrderByRelevanceFieldEnum = {
   content: 'content',
+  nodeId: 'nodeId',
   sender: 'sender'
 };
 

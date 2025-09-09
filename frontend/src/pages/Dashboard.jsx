@@ -679,7 +679,15 @@ const Dashboard = () => {
                     <span>Харилцан яриа: {chatbot?.conversations?.length || 0}</span>
                   </div>
                   <div className="chatbot-flows">
-                    <h4>Урсгалууд:</h4>
+                    <div className="flex justify-between items-center">
+                      <h4>Урсгалууд:</h4>
+                      <button 
+                        onClick={() => navigate(`/flow-builder/${chatbot.id}/new`)}
+                        className="btn secondary small"
+                      >
+                        Шинэ урсгал
+                      </button>
+                    </div>
                     {chatbotFlows[chatbot.id] && chatbotFlows[chatbot.id].length > 0 ? (
                       <ul>
                         {chatbotFlows[chatbot.id].map(flow => (
@@ -695,7 +703,15 @@ const Dashboard = () => {
                         ))}
                       </ul>
                     ) : (
-                      <p>Урсгал оруулаагүй байна</p>
+                      <div className="flex flex-col items-center justify-center p-4 text-center">
+                        <p className="mb-4">Энэ чатботод одоогоор урсгал оруулаагүй байна.</p>
+                        <button 
+                          onClick={() => navigate(`/flow-builder/${chatbot.id}/new`)}
+                          className="btn primary"
+                        >
+                          Эхний урсгалаа үүсгэх
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="chatbot-actions">

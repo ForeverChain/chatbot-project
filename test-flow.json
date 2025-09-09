@@ -1,0 +1,94 @@
+{
+  "name": "Test Flow with Conditions",
+  "nodes": [
+    {
+      "id": "message-1",
+      "type": "message",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Welcome to our service!"
+      }
+    },
+    {
+      "id": "question-1",
+      "type": "question",
+      "position": {
+        "x": 100,
+        "y": 200
+      },
+      "data": {
+        "label": "What is your age?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Under 18"
+          },
+          {
+            "id": "opt2",
+            "text": "18 or over"
+          }
+        ]
+      }
+    },
+    {
+      "id": "condition-1",
+      "type": "condition",
+      "position": {
+        "x": 100,
+        "y": 300
+      },
+      "data": {
+        "label": "Age Check",
+        "expression": "age >= 18"
+      }
+    },
+    {
+      "id": "message-2",
+      "type": "message",
+      "position": {
+        "x": 50,
+        "y": 400
+      },
+      "data": {
+        "label": "Sorry, you must be 18 or older to use this service."
+      }
+    },
+    {
+      "id": "message-3",
+      "type": "message",
+      "position": {
+        "x": 150,
+        "y": 400
+      },
+      "data": {
+        "label": "Great! You're eligible to use our service."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-2",
+      "source": "message-1",
+      "target": "question-1"
+    },
+    {
+      "id": "e2-3",
+      "source": "question-1",
+      "target": "condition-1",
+      "sourceHandle": "opt2"
+    },
+    {
+      "id": "e3-4",
+      "source": "condition-1",
+      "target": "message-2"
+    },
+    {
+      "id": "e3-5",
+      "source": "condition-1",
+      "target": "message-3"
+    }
+  ]
+}

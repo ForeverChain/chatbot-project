@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       // Allow requests from ngrok host
       allowedHosts: [
-        '2848f0ecffd9.ngrok-free.app'
+        '.ngrok-free.app'
       ]
     },
     build: {

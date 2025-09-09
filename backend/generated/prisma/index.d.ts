@@ -4880,6 +4880,7 @@ export namespace Prisma {
     id: number | null
     conversationId: number | null
     content: string | null
+    nodeId: string | null
     sender: string | null
     createdAt: Date | null
   }
@@ -4888,6 +4889,7 @@ export namespace Prisma {
     id: number | null
     conversationId: number | null
     content: string | null
+    nodeId: string | null
     sender: string | null
     createdAt: Date | null
   }
@@ -4896,6 +4898,7 @@ export namespace Prisma {
     id: number
     conversationId: number
     content: number
+    nodeId: number
     sender: number
     createdAt: number
     _all: number
@@ -4916,6 +4919,7 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     content?: true
+    nodeId?: true
     sender?: true
     createdAt?: true
   }
@@ -4924,6 +4928,7 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     content?: true
+    nodeId?: true
     sender?: true
     createdAt?: true
   }
@@ -4932,6 +4937,7 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     content?: true
+    nodeId?: true
     sender?: true
     createdAt?: true
     _all?: true
@@ -5027,6 +5033,7 @@ export namespace Prisma {
     id: number
     conversationId: number
     content: string
+    nodeId: string | null
     sender: string
     createdAt: Date
     _count: MessageCountAggregateOutputType | null
@@ -5054,6 +5061,7 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     content?: boolean
+    nodeId?: boolean
     sender?: boolean
     createdAt?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -5065,11 +5073,12 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     content?: boolean
+    nodeId?: boolean
     sender?: boolean
     createdAt?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "content" | "sender" | "createdAt", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "content" | "nodeId" | "sender" | "createdAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
@@ -5083,6 +5092,7 @@ export namespace Prisma {
       id: number
       conversationId: number
       content: string
+      nodeId: string | null
       sender: string
       createdAt: Date
     }, ExtArgs["result"]["message"]>
@@ -5458,6 +5468,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Message", 'Int'>
     readonly conversationId: FieldRef<"Message", 'Int'>
     readonly content: FieldRef<"Message", 'String'>
+    readonly nodeId: FieldRef<"Message", 'String'>
     readonly sender: FieldRef<"Message", 'String'>
     readonly createdAt: FieldRef<"Message", 'DateTime'>
   }
@@ -10884,6 +10895,7 @@ export namespace Prisma {
     id: 'id',
     conversationId: 'conversationId',
     content: 'content',
+    nodeId: 'nodeId',
     sender: 'sender',
     createdAt: 'createdAt'
   };
@@ -10999,6 +11011,7 @@ export namespace Prisma {
 
   export const MessageOrderByRelevanceFieldEnum: {
     content: 'content',
+    nodeId: 'nodeId',
     sender: 'sender'
   };
 
@@ -11304,6 +11317,7 @@ export namespace Prisma {
     id?: IntFilter<"Message"> | number
     conversationId?: IntFilter<"Message"> | number
     content?: StringFilter<"Message"> | string
+    nodeId?: StringNullableFilter<"Message"> | string | null
     sender?: StringFilter<"Message"> | string
     createdAt?: DateTimeFilter<"Message"> | Date | string
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -11313,6 +11327,7 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     content?: SortOrder
+    nodeId?: SortOrderInput | SortOrder
     sender?: SortOrder
     createdAt?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
@@ -11326,6 +11341,7 @@ export namespace Prisma {
     NOT?: MessageWhereInput | MessageWhereInput[]
     conversationId?: IntFilter<"Message"> | number
     content?: StringFilter<"Message"> | string
+    nodeId?: StringNullableFilter<"Message"> | string | null
     sender?: StringFilter<"Message"> | string
     createdAt?: DateTimeFilter<"Message"> | Date | string
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
@@ -11335,6 +11351,7 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     content?: SortOrder
+    nodeId?: SortOrderInput | SortOrder
     sender?: SortOrder
     createdAt?: SortOrder
     _count?: MessageCountOrderByAggregateInput
@@ -11351,6 +11368,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Message"> | number
     conversationId?: IntWithAggregatesFilter<"Message"> | number
     content?: StringWithAggregatesFilter<"Message"> | string
+    nodeId?: StringNullableWithAggregatesFilter<"Message"> | string | null
     sender?: StringWithAggregatesFilter<"Message"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
   }
@@ -11919,6 +11937,7 @@ export namespace Prisma {
 
   export type MessageCreateInput = {
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
     conversation: ConversationCreateNestedOneWithoutMessagesInput
@@ -11928,12 +11947,14 @@ export namespace Prisma {
     id?: number
     conversationId: number
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
   }
 
   export type MessageUpdateInput = {
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
@@ -11943,6 +11964,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     conversationId?: IntFieldUpdateOperationsInput | number
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11951,12 +11973,14 @@ export namespace Prisma {
     id?: number
     conversationId: number
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
   }
 
   export type MessageUpdateManyMutationInput = {
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11965,6 +11989,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     conversationId?: IntFieldUpdateOperationsInput | number
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12651,6 +12676,7 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     content?: SortOrder
+    nodeId?: SortOrder
     sender?: SortOrder
     createdAt?: SortOrder
   }
@@ -12664,6 +12690,7 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     content?: SortOrder
+    nodeId?: SortOrder
     sender?: SortOrder
     createdAt?: SortOrder
   }
@@ -12672,6 +12699,7 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     content?: SortOrder
+    nodeId?: SortOrder
     sender?: SortOrder
     createdAt?: SortOrder
   }
@@ -14278,6 +14306,7 @@ export namespace Prisma {
 
   export type MessageCreateWithoutConversationInput = {
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
   }
@@ -14285,6 +14314,7 @@ export namespace Prisma {
   export type MessageUncheckedCreateWithoutConversationInput = {
     id?: number
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
   }
@@ -14360,6 +14390,7 @@ export namespace Prisma {
     id?: IntFilter<"Message"> | number
     conversationId?: IntFilter<"Message"> | number
     content?: StringFilter<"Message"> | string
+    nodeId?: StringNullableFilter<"Message"> | string | null
     sender?: StringFilter<"Message"> | string
     createdAt?: DateTimeFilter<"Message"> | Date | string
   }
@@ -15145,12 +15176,14 @@ export namespace Prisma {
   export type MessageCreateManyConversationInput = {
     id?: number
     content: string
+    nodeId?: string | null
     sender: string
     createdAt?: Date | string
   }
 
   export type MessageUpdateWithoutConversationInput = {
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15158,6 +15191,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateWithoutConversationInput = {
     id?: IntFieldUpdateOperationsInput | number
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15165,6 +15199,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateManyWithoutConversationInput = {
     id?: IntFieldUpdateOperationsInput | number
     content?: StringFieldUpdateOperationsInput | string
+    nodeId?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

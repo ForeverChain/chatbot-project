@@ -39,7 +39,10 @@ const Hero = () => {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <button
-            onClick={handleGetStarted}
+             onClick={() => {
+              console.log("Button clicked");
+              navigate("/register");
+            }}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
           > 
             Эхлэх

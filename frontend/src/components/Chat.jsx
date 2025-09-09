@@ -6,6 +6,8 @@ const Chat = ({ chatbotId, userId }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  // Use a consistent conversation ID for this user and chatbot combination
+  const [conversationId] = useState(() => `web_${userId}_${chatbotId}`);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,18 +38,36 @@ const Chat = ({ chatbotId, userId }) => {
       // Send message to backend
       const response = await axios.post(`/chat/chat/${chatbotId}`, {
         message: inputValue,
-        userId: userId
+        userId: conversationId // Use conversationId instead of userId
       });
       
       // Add bot response to chat
+      // Handle both string responses and object responses
+      let botResponseContent = '';
+      let botResponseOptions = null;
+      let botResponseType = 'message';
+      
+      if (typeof response.data.response === 'string') {
+        botResponseContent = response.data.response;
+      } else if (response.data.response && response.data.response.text) {
+        botResponseContent = response.data.response.text;
+        botResponseOptions = response.data.response.options;
+        botResponseType = response.data.response.type || 'message';
+      } else {
+        botResponseContent = 'Хариулт...';
+      }
+      
       const botMessage = {
         id: Date.now() + 1,
-        content: response.data.response,
+        content: botResponseContent,
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date(),
+        options: botResponseOptions,
+        type: botResponseType
       };
       
       setMessages(prev => [...prev, botMessage]);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       
@@ -60,8 +80,19 @@ const Chat = ({ chatbotId, userId }) => {
       };
       
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle quick reply button click
+  const handleQuickReplyClick = (optionText) => {
+    if (isLoading) return;
+    
+    setInputValue(optionText);
+    // Trigger form submission
+    const form = document.querySelector('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
   };
 
@@ -78,22 +109,39 @@ const Chat = ({ chatbotId, userId }) => {
           </div>
         ) : (
           messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={message.id}>
               <div
-                className={`max-w-xs md:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className="text-sm">{message.content}</div>
-                <div className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <div
+                  className={`max-w-xs md:max-w-md px-4 py-2 rounded-lg ${
+                    message.sender === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  <div className="text-sm">{message.content}</div>
+                  <div className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               </div>
+              
+              {/* Render quick reply buttons if they exist */}
+              {message.sender === 'bot' && message.options && message.options.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2 justify-start">
+                  {message.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuickReplyClick(option.text)}
+                      className="px-3 py-1 bg-white border border-blue-500 text-blue-500 rounded-full text-sm hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      disabled={isLoading}
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))
         )}
